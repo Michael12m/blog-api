@@ -7,10 +7,12 @@ const profileSchema=new mongoose.Schema({
     avatarUrl:{
         type:String,
         default:'',
+    unique:true,
     },
     avatarId:{
         type:String,
         default:'',
+        unique:true,
     },
     // user:{
     //     ref:'User',
