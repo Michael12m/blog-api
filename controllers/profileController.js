@@ -67,10 +67,14 @@ if (req.file)   {
         resource_type:'image',
         overwrite:true,
     })
-    profile.avatarId=updatepic.public_id;
-    profile.avatarUrl=updatepic.secure_url;
+    const updatePhoto=await Profile.findByIdAndUpdate(id,{
+        avatarUrl:updatepic.secure_url,
+        avatarId:updatepic.public_id,
+    },{new:true,
+        runValidators:true,
+    });
+    await
     fs.unlink(req.file.path);
-    profile.save()
     return res.status(200).json({
         status:'success',
         data:{
@@ -79,7 +83,7 @@ if (req.file)   {
         });
     }
 else if(req.body){
-    const updatedProfile=await Profile.findByIdAndUpdate(id,req.body,{new:true,
+    const updatedProfile=await Profile.findByIdAndUpdate(id,req.body.bio,{new:true,
         runValidators:true,
     });
     return res.status(200).json({
