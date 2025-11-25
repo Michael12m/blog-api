@@ -3,6 +3,7 @@ const fs = require("fs").promises;
 const catchAsync = require(path.join(__dirname, "..", "errors", "catchAsync"));
 const Profile = require(path.join(__dirname, "..", "models", "profile"));
 const cloudinary = require(path.join(__dirname, "..", "config", "cloudinary"));
+const jwt = require("jsonwebtoken");
 const getProfile = catchAsync(async (req, res) => {
   const id = req.params.id;
   const profile = await Profile.findById(id);
@@ -38,15 +39,17 @@ const createProfile = catchAsync(async (req, res) => {
     quality: "auto",
     overwrite: true,
   });
+  const decoded = jwt.verify(req.headers.authorization.split(' ')[1], process.env.ACCESS_TOKEN_SECRET);
   const profile = await Profile.create({
     bio,
     avatarUrl: result.secure_url,
     avatarId: result.public_id,
+    user: decoded.id
   });
   await fs.unlink(file.path);
   res.status(201).json({
     status: "success",
-    data: { bio, profile },
+    data: { profile },
   });
 });
 const updateProfile = catchAsync(async (req, res) => {

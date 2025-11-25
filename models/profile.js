@@ -14,11 +14,11 @@ const profileSchema=new mongoose.Schema({
         default:'',
         unique:true,
     },
-    // user:{
-    //     ref:'User',
-    //     type:mongoose.Schema.Types.ObjectId,
-    //     required:true
-    // }
+    user:{
+        ref:'User',
+        type:mongoose.Schema.Types.ObjectId,
+        required:true
+    }
 })
 const Profile=mongoose.model('Profile',profileSchema);
 module.exports=Profile;

@@ -1,4 +1,5 @@
 const path=require('path');
+const jwt=require('jsonwebtoken');
 const Comment=require(path.join(__dirname,'..','models','comments'));
 const catchAsync=require(path.join(__dirname,'..','errors','catchAsync'));
 const getComment=catchAsync(async(req,res)=>{
@@ -47,7 +48,13 @@ return res.status(200).json({
 
 
 const createComments = catchAsync(async (req, res) => {
-    const body= req.body
+    const body= req.body;
+    const {id}=req.params;
+    console.log(id);
+    const token=req.headers.authorization.split(' ')[1];
+    const decoded=jwt.verify(token,process.env.ACCESS_TOKEN_SECRET);
+    body.user=decoded.id;
+    body.post=id;
     const newComment=await Comment.create(body);
     res.status(201).json({
         status:'success',
@@ -55,7 +62,7 @@ const createComments = catchAsync(async (req, res) => {
             comment: newComment
         }
     });
-})
+ })
 const updateComments = catchAsync(async (req, res) => {
     const id=req.params.id;
     const body=req.body;

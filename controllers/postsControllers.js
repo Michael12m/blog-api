@@ -1,6 +1,7 @@
 const path=require('path');
 const Post = require(path.join(__dirname, '..', 'models', 'Posts'));
 const catchAsync=require(path.join(__dirname,'..','errors','catchAsync'));
+const jwt=require('jsonwebtoken');
 const getPosts = catchAsync(async (req, res) => {
     //pagination 
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -49,6 +50,9 @@ const getPost=catchAsync(async(req,res)=>{
 })
 const createPost=catchAsync(async(req,res)=>{
     const body=req.body;
+    const token=req.headers.authorization.split(' ')[1];
+    const decoded=jwt.verify(token,process.env.ACCESS_TOKEN_SECRET);
+    body.user=decoded.id;
     const newPost=await Post.create(body);
     res.status(201).json({
         status:'success',

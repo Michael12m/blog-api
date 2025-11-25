@@ -29,6 +29,10 @@ const userSchema=new mongoose.Schema({
         minlength:6,
 
     },
+    refreshToken:{
+        type:[String],
+        default:[]
+    },
     role:{
         type:String,
         enum:['user','admin'],
@@ -42,7 +46,8 @@ const userSchema=new mongoose.Schema({
     },
     toObject:{
         virtuals:true
-    }
+    },
+        id:false,
 });
 userSchema.pre('save', function (next) {
   if (this.isModified('firstName') || this.isModified('lastName') || this.isNew) {
@@ -72,5 +77,6 @@ userSchema.methods.comparePassword= function(password){
 userSchema.virtual('fullName').get(function(){
     return `${this.firstName} ${this.lastName}`;
 });
-const User=mongoose.model("User",userSchema);
-module.exports=User;
+
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+module.exports = User;
