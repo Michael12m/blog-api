@@ -34,7 +34,14 @@ return res.status(200).json({
 })
 const getPost=catchAsync(async(req,res)=>{
     const id=req.params.id;
-    const post=await Post.findById(id);
+    const post=await Post.findById(id).populate('user','firstName lastName -_id ').populate({
+        path:'comments',
+        select:'content user createdAt -post -_id',
+        populate:{
+            path:'user',
+            select:'firstName lastName -_id'
+        }
+    }).select('title content  user comments createdAt ');
     if(!post){
         return res.status(404).json({
             status:'fail',

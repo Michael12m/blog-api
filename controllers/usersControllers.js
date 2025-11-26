@@ -1,4 +1,5 @@
 const path = require("path");
+const { populate } = require("../models/User");
 const User = require(path.join(__dirname, "..", "models", "User"));
 const catchAsync = require(path.join(__dirname, "..", "errors", "catchAsync"));
 
@@ -30,7 +31,15 @@ const getUsers = catchAsync(async (req, res) => {
 })
 const getUser = catchAsync(async (req, res) => {
     const id = req.params.id;
-    const user = await User.findById(id);
+const user = await User.findById(id)
+  .select('firstName lastName')
+  .populate({
+    path: 'posts',
+    select: 'title content createdAt -user ' ,
+populate: {
+    path: 'comments',
+    select: 'content user createdAt -post -_id'
+}});
     if (!user) {
         return res.status(404).json({
             status: 'fail',

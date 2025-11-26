@@ -15,7 +15,18 @@ const postSchema = new Schema({
         required: true
     }
 
-}, {timestamps: true})
+}, {
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true},
+    timestamps: true,
+    id:false,
+})
+postSchema.virtual('comments',{
+    ref:'Comment',
+    localField:'_id',
+    foreignField:'post',
+    justOne:false  
+})
 postSchema.pre("save", function (next) {
     if (this.isModified("title") || this.isNew) {
       this.slug = slugify(this.title, { lower: true, strict: true });

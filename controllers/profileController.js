@@ -6,7 +6,7 @@ const cloudinary = require(path.join(__dirname, "..", "config", "cloudinary"));
 const jwt = require("jsonwebtoken");
 const getProfile = catchAsync(async (req, res) => {
   const id = req.params.id;
-  const profile = await Profile.findById(id);
+  const profile = await Profile.findById(id).populate("user", "firstName lastName -_id");
   if (!profile) {
     return res.status(400).json({
       status: "fail",
