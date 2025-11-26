@@ -2,7 +2,7 @@ const path = require("path");
 const { populate } = require("../models/User");
 const User = require(path.join(__dirname, "..", "models", "User"));
 const catchAsync = require(path.join(__dirname, "..", "errors", "catchAsync"));
-
+const AppError = require(path.join(__dirname, "..", "errors", "appError"));
 const getUsers = catchAsync(async (req, res) => {
     const page=Math.max(1,parseInt(req.query.page)||1);
     const limit=20;
@@ -41,10 +41,7 @@ populate: {
     select: 'content user createdAt -post -_id'
 }});
     if (!user) {
-        return res.status(404).json({
-            status: 'fail',
-            message: 'User not found'
-        });
+        return next(new AppError("User not found", 404));
     }
     res.status(200).json({
         status: 'success',
@@ -68,10 +65,7 @@ const updateUser = catchAsync(async (req, res) => {
     const body = req.body;
     const user = await User.findByIdAndUpdate(id, body, { new: true, runValidators: true });
     if (!user) {
-        return res.status(404).json({
-            status: 'fail',
-            message: 'User not found'
-        });
+        return next(new AppError("User not found", 404));
     }
     res.status(200).json({
         status: 'success',
@@ -84,10 +78,7 @@ const deleteUser = catchAsync(async (req, res) => {
     const id = req.params.id;
     const user = await User.findByIdAndDelete(id);
     if (!user) {
-        return res.status(404).json({
-            status: 'fail',
-            message: 'User not found'
-        });
+        return next(new AppError("User not found", 404));
     }
     res.status(204).json({
         status: 'delete successfully',

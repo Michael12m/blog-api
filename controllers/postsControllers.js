@@ -2,6 +2,7 @@ const path=require('path');
 const Post = require(path.join(__dirname, '..', 'models', 'Posts'));
 const catchAsync=require(path.join(__dirname,'..','errors','catchAsync'));
 const jwt=require('jsonwebtoken');
+const AppError=require(path.join(__dirname,'..','errors','appError'));
 const getPosts = catchAsync(async (req, res) => {
     //pagination 
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -43,10 +44,7 @@ const getPost=catchAsync(async(req,res)=>{
         }
     }).select('title content  user comments createdAt ');
     if(!post){
-        return res.status(404).json({
-            status:'fail',
-            message:'Post not found'
-        });
+        return next(new AppError("Post not found", 404));
     }
     res.status(200).json({
         status:'success',
@@ -73,10 +71,7 @@ const updatePost=catchAsync(async(req,res)=>{
     const body=req.body;
     const post=await Post.findByIdAndUpdate(id,body,{new:true,runValidators:true});
     if(!post){
-        return  res.status(404).json({
-            status:'fail',
-            message:'Post not found'
-        });
+        return next(new AppError("Post not found", 404));
     }
     res.status(200).json({
         status:'success',
@@ -89,10 +84,7 @@ const deletePost=catchAsync(async(req,res)=>{
     const id=req.params.id;
     const post=await Post.findByIdAndDelete(id);
     if(!post){
-        return res.status(404).json({
-            status:'fail',
-            message:'Post not found'
-        });
+        return next(new AppError("Post not found", 404));
     }
     res.status(204).json({
         status:'delete successfully',

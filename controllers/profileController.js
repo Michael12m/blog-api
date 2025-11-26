@@ -4,14 +4,12 @@ const catchAsync = require(path.join(__dirname, "..", "errors", "catchAsync"));
 const Profile = require(path.join(__dirname, "..", "models", "profile"));
 const cloudinary = require(path.join(__dirname, "..", "config", "cloudinary"));
 const jwt = require("jsonwebtoken");
+const AppError = require(path.join(__dirname, "..", "errors", "appError"));
 const getProfile = catchAsync(async (req, res) => {
   const id = req.params.id;
   const profile = await Profile.findById(id).populate("user", "firstName lastName -_id");
   if (!profile) {
-    return res.status(400).json({
-      status: "fail",
-      message: "Profile ID is not found",
-    });
+    return next(new AppError("Profile not found", 404));
   }
   res.status(200).json({
     status: "success",
@@ -57,10 +55,7 @@ const updateProfile = catchAsync(async (req, res) => {
   const file = req.file;
   const profile = await Profile.findById(id);
   if (!profile) {
-    return res.status(400).json({
-      status: "fail",
-      message: "Profile ID is not found",
-    });
+    return next(new AppError("Profile not found", 404));
   }
   if (req.file) {
     await cloudinary.uploader.destroy(profile.avatarId);
@@ -105,10 +100,7 @@ const deleteProfile = catchAsync(async (req, res) => {
   const id = req.params.id;
   const profile = await Profile.findByIdAndDelete(id);
   if (!profile) {
-    res.status(400).json({
-      status: "fail",
-      message: "Profile ID is not found",
-    });
+    return next(new AppError("Profile not found", 404));
   }
   await cloudinary.uploader.destroy(profile.avatarId);
   res.status(204).json({
@@ -124,10 +116,7 @@ const removeBio = catchAsync(async (req, res) => {
     { new: true }
   );
   if (!profile) {
-    res.status(400).json({
-      status: "fail",
-      message: "Profile ID is not found",
-    });
+    return next(new AppError("Profile not found", 404));
   }
   res.status(200).json({
     status: "success",
@@ -145,10 +134,7 @@ const removePhoto = catchAsync(async (req, res) => {
     { new: true }
   );
   if (!profile) {
-    res.status(400).json({
-      status: "fail",
-      message: "Profile ID is not found",
-    });
+    return next(new AppError("Profile not found", 404));
   }
   res.status(200).json({
     status: "success",

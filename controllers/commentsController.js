@@ -2,14 +2,12 @@ const path=require('path');
 const jwt=require('jsonwebtoken');
 const Comment=require(path.join(__dirname,'..','models','comments'));
 const catchAsync=require(path.join(__dirname,'..','errors','catchAsync'));
+const AppError=require(path.join(__dirname,'..','errors','appError'));
 const getComment=catchAsync(async(req,res)=>{
 const id=req.params.id;
 const comment=await Comment.findById(id);
 if(!comment){
-    return res.status(404).json({
-        status:'fail',
-        message:'Comment not found'
-    });
+    return next(new AppError("Comment not found",404));
 }
 res.status(200).json({
     status:'success',
@@ -68,10 +66,7 @@ const updateComments = catchAsync(async (req, res) => {
     const body=req.body;
     const updatedComment=await Comment.findByIdAndUpdate(id,body,{new:true,runValidators:true});
     if(!updatedComment){
-        return res.status(404).json({
-            status:'fail',
-            message:'Comment not found'
-        });
+        return next(new AppError("Comment not found",404));
     }
     res.status(200).json({
         status:'success',
@@ -84,10 +79,7 @@ const deleteComments = catchAsync(async (req, res) => {
     const id=req.params.id;
     const deletedComment=await Comment.findByIdAndDelete(id);
     if(!deletedComment){
-        return res.status(404).json({
-            status:'fail',
-            message:'Comment not found'
-        });
+        return next(new AppError("Comment not found",404));
     }
 res.status(204).send();
 })
