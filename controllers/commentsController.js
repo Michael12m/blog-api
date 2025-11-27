@@ -3,6 +3,7 @@ const jwt=require('jsonwebtoken');
 const Comment=require(path.join(__dirname,'..','models','comments'));
 const catchAsync=require(path.join(__dirname,'..','errors','catchAsync'));
 const AppError=require(path.join(__dirname,'..','errors','appError'));
+const {pagination}=require(path.join(__dirname,'..','utils','pagination'))
 const getComment=catchAsync(async(req,res)=>{
 const id=req.params.id;
 const comment=await Comment.findById(id);
@@ -17,29 +18,26 @@ res.status(200).json({
 })
 })
 const getComments = catchAsync(async (req, res) => {
-        const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit =20;
-    const skip =(page-1)*limit;
-    const comments=await Comment.find().skip(skip).limit(limit);
-    const count=await Comment.estimatedDocumentCount();
-    const totalPages=Math.ceil(count/limit);
-    const isNext=totalPages>=(page+1);
+    const querypage=req.query.page
+    const { posts, page, totalPages, isNext,count } = await pagination(querypage,Comment);
     if(!(isNext||totalPages===page)){
 return res.status(200).json({ 
     status:'success',
-    message:'No more comments',
+    message:'No more pages',
     data:[]
-    })}   
-     res.status(200).json({
+ })
+    }
+    res.status(200).json({
         status: 'success',
         data: {
-            page,     
+            page,
             totalPages,
-            docCount: comments.length,
+           count,
             isNext,
             nextPage: isNext ? page + 1 : null,
             prevPage: page > 1 ? page - 1 : null,
-            comments,
+            posts,
+            
         }
     });
 })

@@ -3,15 +3,11 @@ const Post = require(path.join(__dirname, '..', 'models', 'Posts'));
 const catchAsync=require(path.join(__dirname,'..','errors','catchAsync'));
 const jwt=require('jsonwebtoken');
 const AppError=require(path.join(__dirname,'..','errors','appError'));
+const { pagination } = require(path.join(__dirname,'..','utils','pagination'));
 const getPosts = catchAsync(async (req, res) => {
     //pagination 
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit =20;
-    const skip =(page-1)*limit;
-    const posts=await Post.find().skip(skip).limit(limit);
-    const count=await Post.estimatedDocumentCount();
-    const totalPages=Math.ceil(count/limit);
-    const isNext=totalPages>=(page+1);
+    const querypage=req.query.page
+    const { posts, page, totalPages, isNext,count } = await pagination(querypage,Post);
     if(!(isNext||totalPages===page)){
 return res.status(200).json({ 
     status:'success',
@@ -23,8 +19,8 @@ return res.status(200).json({
         status: 'success',
         data: {
             page,
-            totalPages: Math.ceil(count / limit),
-            docCount: posts.length,
+            totalPages,
+           count,
             isNext,
             nextPage: isNext ? page + 1 : null,
             prevPage: page > 1 ? page - 1 : null,

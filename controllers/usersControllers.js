@@ -1,31 +1,29 @@
 const path = require("path");
-const { populate } = require("../models/User");
 const User = require(path.join(__dirname, "..", "models", "User"));
 const catchAsync = require(path.join(__dirname, "..", "errors", "catchAsync"));
 const AppError = require(path.join(__dirname, "..", "errors", "appError"));
+const { pagination } = require(path.join(__dirname,'..','utils','pagination'));
 const getUsers = catchAsync(async (req, res) => {
-    const page=Math.max(1,parseInt(req.query.page)||1);
-    const limit=20;
-    const skip=(page-1)*limit;
-    const totalPages=Math.ceil(await User.estimatedDocumentCount()/limit);
-    const isNext=totalPages>=(page+1);
+    const querypage=req.query.page
+    const { posts, page, totalPages, isNext,count } = await pagination(querypage,User);
     if(!(isNext||totalPages===page)){
-        return res.status(200).json({ 
-            status:'success',
-            message:'No more pages',
-        });
+return res.status(200).json({ 
+    status:'success',
+    message:'No more pages',
+    data:[]
+ })
     }
-    const users = await User.find().skip(skip).limit(limit);
     res.status(200).json({
         status: 'success',
         data: {
-            page,     
+            page,
             totalPages,
-            docCount: users.length,
+           count,
             isNext,
             nextPage: isNext ? page + 1 : null,
             prevPage: page > 1 ? page - 1 : null,
-            users,
+            posts,
+            
         }
     });
 })
