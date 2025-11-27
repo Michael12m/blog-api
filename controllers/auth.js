@@ -2,7 +2,7 @@ const path=require("path")
 const crypto=require('crypto')
 const User=require(path.join(__dirname,'..','models','user'))
 const catchAsync=require(path.join(__dirname,'..','errors','catchAsync'))
-const{accessToken,refreshToken}=require(path.join(__dirname,'..','utils','auth','token'))
+const{accessToken,refreshToken,hashToken}=require(path.join(__dirname,'..','utils','auth','token'))
 const AppError=require(path.join(__dirname,'..','errors','appError'))
 //login user
 const loginUser=catchAsync(async(req,res,next)=>{
@@ -23,7 +23,7 @@ const loginUser=catchAsync(async(req,res,next)=>{
         httpOnly:true,
         signed:true
     });    
-    user.refreshToken.push(crypto.createHash('sha256').update(refresh).digest('hex'));
+    user.refreshToken.push(hashToken(refresh));
     await user.save();
     res.status(200).json({message:"Login successful", user, accessToken: access});
 })
@@ -33,7 +33,7 @@ const refreshToken=req.signedCookies.refreshToken;
 if(!refreshToken){
     return next(new AppError("No refresh token provided",401));
 }
-const hashedToken=crypto.createHash('sha256').update(refreshToken).digest('hex');
+const hashedToken=hashToken(refreshToken);
 const user=await User.findOne({refreshToken:hashedToken});
 if(!user){
     return next(new AppError("Invalid refresh token",403));
@@ -45,7 +45,7 @@ res.cookie('refreshToken',newRefreshToken,{
     signed:true
 });
 user.refreshToken=user.refreshToken.filter(token=>token!==hashedToken);
-user.refreshToken.push(crypto.createHash('sha256').update(newRefreshToken).digest('hex'));
+user.refreshToken.push(hashToken(newRefreshToken));
 await user.save();
 res.status(200).json({accessToken:newAccessToken});
  })
@@ -55,7 +55,7 @@ res.status(200).json({accessToken:newAccessToken});
     if(!refreshToken){
         return next(new AppError("No refresh token provided",401));
     }
-    const hashedToken=crypto.createHash('sha256').update(refreshToken).digest('hex');
+    const hashedToken=hashToken(refreshToken);
     const user=await User.findOne({refreshToken:hashedToken});
     if(user){
         user.refreshToken=user.refreshToken.filter(token=>token!==hashedToken);
